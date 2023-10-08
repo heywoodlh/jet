@@ -1,0 +1,6 @@
+- name: echo hello world
+  groups:
+    - all
+  tasks:
+    - !shell
+      cmd: "echo hello world"
