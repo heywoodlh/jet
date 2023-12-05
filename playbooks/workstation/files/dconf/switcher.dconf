@@ -1,0 +1,4 @@
+[/]
+font-size=uint32 20
+max-width-percentage=uint32 40
+show-switcher=['<Super>space']

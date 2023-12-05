@@ -1,0 +1,6 @@
+[/]
+maximize=@as []
+switch-input-source=['disabled']
+switch-to-workspace-left=['<Super>bracketleft']
+switch-to-workspace-right=['<Super>bracketright']
+toggle-maximized=['<Super>Up']

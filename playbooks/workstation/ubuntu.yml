@@ -1,0 +1,303 @@
+- name: Setup Ubuntu Workstation
+  groups:
+    - all
+  tasks:
+    - !shell
+      name: Update apt cache
+      cmd: "apt update"
+      with:
+        sudo: root
+
+    - !shell
+      name: Install dependencies
+      cmd: "apt install -y {{ item }}"
+      with:
+        sudo: root
+        items:
+          - curl
+          - acpi
+          - dbus-x11
+          - gnome-screenshot
+          - dconf-editor
+
+    - !shell
+      name: Install Tailscale
+      cmd: "curl https://tailscale.com/install.sh | bash"
+      with:
+        sudo: root
+
+    - !shell
+      name: Install Nix
+      cmd: curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Configure dirs
+      cmd: "mkdir -p {{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - /home/heywoodlh/bin
+          - /home/heywoodlh/.config/systemd/user
+
+    - !copy
+      name: Setup nix-install.sh
+      src: home/bin/nix-install.sh
+      dest: /home/heywoodlh/bin/nix-install.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Make nix-install.sh executable
+      cmd: chmod +x /home/heywoodlh/bin/nix-install.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Install flakes
+      cmd: "/home/heywoodlh/bin/nix-install.sh github:heywoodlh/flakes#{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - vim
+          - git
+          - tmux
+          - st
+
+    - !shell
+      name: Install essential packages
+      cmd: "/home/heywoodlh/bin/nix-install.sh nixpkgs#{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - _1password-gui
+          - bind
+          - btop
+          - coreutils
+          - colima
+          - curl
+          - file
+          - findutils
+          - github-cli
+          - gnome-extensions-cli
+          - gnupg
+          - gnumake
+          - gnused
+          - guake
+          - gomuks
+          - inetutils
+          - jq
+          - keyutils
+          - libarchive
+          - libvirt
+          - lima
+          - mosh
+          - nmap
+          - nordic
+          - openssl
+          - pciutils
+          - pwgen
+          - python3
+          - screen
+          - tree
+          - unclutter
+          - unzip
+          - virt-manager
+          - xclip
+          - xdotool
+          - zip
+
+    - !shell
+      name: Install other Nix items
+      cmd: "/home/heywoodlh/bin/nix-install.sh {{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - "github:heywoodlh/nixpkgs/jetporch-init#jetporch"
+
+    - !shell
+      name: Link GUI apps
+      cmd: "find ~/.nix-profile/share/applications -type l -exec ln -s ~/.{} ~/.local/share/applications \\;"
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Enable ufw
+      cmd: "ufw --force enable"
+      with:
+        sudo: root
+
+    - !copy
+      name: Configure unclutter
+      src: home/etc/systemd/unclutter.service
+      dest: /home/heywoodlh/.config/systemd/user/unclutter.service
+      with:
+        sudo: root
+
+    - !copy
+      name: Create 1Password desktop entry
+      src: home/desktop/suckless-terminal.desktop
+      dest: /home/heywoodlh/.local/share/applications/suckless-terminal.desktop
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Configure various 1Password items
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - mkdir -p /home/heywoodlh/.config/1Password/settings
+          - mkdir -p /home/heywoodlh/.local/share/applications
+          - curl -L https://raw.githubusercontent.com/RiteshK-611/simple-icons/0d45963c5ad523aa72edfebf02036c4c14b4b5ca/icons/1password.svg -o /home/heywoodlh/.local/share/applications/1password.svg
+
+    - !copy
+      name: Configure 1Password settings
+      src: home/1password.json
+      dest: /home/heywoodlh/.config/1Password/settings/settings.json
+      with:
+        sudo: heywoodlh
+
+    - !copy
+      name: Create 1Password desktop entry
+      src: home/desktop/onepassword.desktop
+      dest: /home/heywoodlh/.local/share/applications/onepassword.desktop
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Launch 1Password at startup
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - mkdir -p /home/heywoodlh/.config/autostart
+          - ln -sf /home/heywoodlh/.local/share/applications/onepassword.desktop /home/heywoodlh/.config/autostart/
+
+    - !shell
+      name: Get various media assets
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - "curl --silent -L https://avatars.githubusercontent.com/u/18178614 -o /home/heywoodlh/.face"
+          - curl -L https://raw.githubusercontent.com/dxnst/nord-backgrounds/main/operating-systems/1920x1080/ubuntu.png -o /home/heywoodlh/.wallpaper.png
+
+    - !copy
+      name: Copy guake.conf
+      src: home/guake.conf
+      dest: /tmp/guake.conf
+
+    - !shell
+      name: Import guake.conf
+      cmd: /home/heywoodlh/.nix-profile/bin/guake --restore-preferences=/tmp/guake.conf
+      with:
+        sudo: heywoodlh
+
+    - !copy
+      name: GNOME extensions
+      src: home/bin/gnome-extensions.sh
+      dest: /home/heywoodlh/bin/gnome-extensions.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Run gnome-extensions.sh
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - chmod 755 /home/heywoodlh/bin/gnome-extensions.sh
+          - /home/heywoodlh/bin/gnome-extensions.sh
+
+    - !copy
+      name: GNOME settings
+      src: home/bin/gnome-settings.sh
+      dest: /home/heywoodlh/bin/gnome-settings.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Run gnome-settings.sh
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - chmod 755 /home/heywoodlh/bin/gnome-settings.sh
+          - /home/heywoodlh/bin/gnome-settings.sh
+
+    - !copy
+      name: 1Password script
+      src: home/bin/1password.sh
+      dest: /home/heywoodlh/bin/1password.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Run 1password.sh
+      cmd: "{{ item }}"
+      with:
+        sudo: root
+        items:
+          - chmod 755 /home/heywoodlh/bin/1password.sh
+          - /home/heywoodlh/bin/1password.sh
+
+    - !copy
+      name: Copy nerdfonts
+      src: home/bin/nerdfonts.sh
+      dest: /home/heywoodlh/bin/nerdfonts.sh
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Install nerdfonts
+      cmd: "{{ item }}"
+      with:
+        sudo: heywoodlh
+        items:
+          - chmod 755 /home/heywoodlh/bin/nerdfonts.sh
+          - /home/heywoodlh/bin/nerdfonts.sh
+
+    - !copy
+      name: Copy dconf
+      src: "dconf/{{ item }}"
+      dest: "/tmp/{{ item }}"
+      with:
+        items:
+          - media-keys.dconf
+          - wm-keybindings.dconf
+          - custom-keybindings.dconf
+          - just-perfection.dconf
+          - switcher.dconf
+
+    - !shell
+      name: Import media keybinds
+      cmd: dconf load /org/gnome/settings-daemon/plugins/media-keys/ < /tmp/media-keys.dconf
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Import custom keybinds
+      cmd: dconf load /org/gnome/desktop/wm/keybindings/ < /tmp/wm-keybindings.dconf
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Import custom keybinds
+      cmd: dconf load /org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/ < /tmp/custom-keybindings.dconf
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Import just-perfection settings
+      cmd: dconf load /org/gnome/shell/extensions/just-perfection/ < /tmp/just-perfection.dconf
+      with:
+        sudo: heywoodlh
+
+    - !shell
+      name: Import switcher settings
+      cmd: dconf load /org/gnome/shell/extensions/switcher/ < /tmp/switcher.dconf
+      with:
+        sudo: heywoodlh
+

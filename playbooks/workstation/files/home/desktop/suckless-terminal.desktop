@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Suckless Terminal
+Comment=Use the command line
+Keywords=shell;prompt;command;commandline;cmd;
+Exec=/home/heywoodlh/.nix-profile/bin/st -A 0.95 -z 16
+Icon=org.gnome.Terminal
+Type=Application
+Categories=GNOME;GTK;System;TerminalEmulator;
+StartupNotify=false

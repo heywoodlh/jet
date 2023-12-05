@@ -1,0 +1,5 @@
+[/]
+next=['<Shift><Control>n']
+play=['<Shift><Control>space']
+previous=['<Shift><Control>p']
+terminal=@as []
